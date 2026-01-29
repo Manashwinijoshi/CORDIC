@@ -1,10 +1,10 @@
 module ADD_SUB (
-    input  wire               Clk,
-    input  wire               Reset,
-    input  wire signed [15:0] Input_a,
-    input  wire signed [15:0] Input_b,
-    input  wire               Enable,
-    output reg  signed [15:0] Output_res
+    input wire Clk,
+    input wire Reset,
+    input wire signed [15:0] Input_a,
+    input wire signed [15:0] Input_b,
+    input wire Enable,
+    output reg signed [15:0] Output_res
 );
 
     reg signed [16:0] temp_res;
@@ -21,11 +21,11 @@ module ADD_SUB (
             else begin
                 temp_res = Input_a + Input_b;
             end
-            
-            if (temp_res > 17'sd32767) begin
+
+            if (temp_res > 17'sd32767) begin // Max positive = +32767
                 Output_res <= 16'sd32767;
             end
-            else if (temp_res < -17'sd32768) begin
+            else if (temp_res < -17'sd32768) begin // Max negative = -32768
                 Output_res <= -16'sd32768;
             end
             else begin

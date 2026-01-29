@@ -1,19 +1,38 @@
 module POST_PROCESSING_UNIT (
-    input  wire signed [15:0] Cordic_x_in,
-    input  wire signed [15:0] Cordic_y_in,
-    input  wire               Cos_negate_in,
-    input  wire               Sin_negate_in,
-    output wire signed [15:0] Cos,
-    output wire signed [15:0] Sin
+    input wire clk,
+    input wire rst,
+    input wire [31:0] cordic_x,
+    input wire [31:0] cordic_y,
+    input wire cos_neg,
+    input wire sin_neg,
+    output reg [31:0] cos,
+    output reg [31:0] sin
 );
 
-    wire signed [15:0] temp_cos;
-    wire signed [15:0] temp_sin;
+    reg [31:0] cos_work;
+    reg [31:0] sin_work;
 
-    assign temp_cos = (Cos_negate_in) ? -Cordic_x_in : Cordic_x_in;
-    assign temp_sin = (Sin_negate_in) ? -Cordic_y_in : Cordic_y_in;
-    
-    assign Cos = temp_cos;
-    assign Sin = temp_sin;
+    always @(*) begin
+        if (cos_neg)
+            cos_work = {~cordic_x[31], cordic_x[30:0]};
+        else
+            cos_work = cordic_x;
+            
+        if (sin_neg)
+            sin_work = {~cordic_y[31], cordic_y[30:0]};
+        else
+            sin_work = cordic_y;
+    end
+
+    always @(posedge clk) begin
+        if (rst) begin
+            cos <= 32'h00000000;
+            sin <= 32'h00000000;
+        end
+        else begin
+            cos <= cos_work;
+            sin <= sin_work;
+        end
+    end
 
 endmodule

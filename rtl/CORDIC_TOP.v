@@ -1,77 +1,50 @@
+
 module CORDIC_TOP (
-    input  wire        Clk,
-    input  wire        Reset,
-    input  wire [16:0] Input_angle,
-    output wire signed [15:0] Cos_out,
-    output wire signed [15:0] Sin_out
+    input wire clk,
+    input wire rst,
+    input wire [31:0] input_angle,
+    output wire [31:0] cos,
+    output wire [31:0] sin
 );
 
-    parameter STAGES = 16;
-    
-    wire [15:0] Reduced_angle;
-    wire        cos_negate_pre;
-    wire        sin_negate_pre;
-    
-    wire signed [15:0] cordic_x_out;
-    wire signed [15:0] cordic_y_out;
-    wire               cos_negate_out;
-    wire               sin_negate_out;
-    
-    reg  signed [15:0] initial_x_reg;
-    reg  signed [15:0] initial_y_reg;
-    reg  signed [15:0] initial_z_reg;
-    reg                initial_cos_negate_reg;
-    reg                initial_sin_negate_reg;
-    
-    localparam signed [15:0] CORDIC_GAIN = 16'sh4DB9;
+    wire [31:0] angle_pre;
+    wire cos_neg_pre;
+    wire sin_neg_pre;
+    wire [31:0] x_pipe;
+    wire [31:0] y_pipe;
+    wire cos_neg_pipe;
+    wire sin_neg_pipe;
 
-    PRE_PROCESSING_UNIT PIPU (
-        .Input_angle(Input_angle),
-        .Reduced_angle(Reduced_angle),
-        .Cos_negate(cos_negate_pre),
-        .Sin_negate(sin_negate_pre)
+    PRE_PROCESSING_UNIT PRE (
+        .clk(clk),
+        .rst(rst),
+        .input_angle(input_angle),
+        .registered_angle(angle_pre),
+        .cos_neg(cos_neg_pre),
+        .sin_neg(sin_neg_pre)
     );
 
-    always @(posedge Clk) begin
-        if (Reset) begin
-            initial_x_reg <= 16'b0;
-            initial_y_reg <= 16'b0;
-            initial_z_reg <= 16'b0;
-            initial_cos_negate_reg <= 1'b0;
-            initial_sin_negate_reg <= 1'b0;
-        end
-        else begin
-            initial_x_reg <= CORDIC_GAIN;
-            initial_y_reg <= 16'b0;
-            initial_z_reg <= Reduced_angle;
-            initial_cos_negate_reg <= cos_negate_pre;
-            initial_sin_negate_reg <= sin_negate_pre;
-        end
-    end
-
-    CORDIC_PIPELINE #(
-        .STAGES(STAGES)
-    ) CP (
-        .Clk(Clk),
-        .Reset(Reset),
-        .Initial_x(initial_x_reg),
-        .Initial_y(initial_y_reg),
-        .Initial_z(initial_z_reg),
-        .Initial_cos_negate(initial_cos_negate_reg),
-        .Initial_sin_negate(initial_sin_negate_reg),
-        .Final_cordic_x(cordic_x_out),
-        .Final_cordic_y(cordic_y_out),
-        .Final_cos_negate(cos_negate_out),
-        .Final_sin_negate(sin_negate_out)
+    CORDIC_PIPELINE PIPE (
+        .clk(clk),
+        .rst(rst),
+        .angle_in(angle_pre),
+        .cos_neg_in(cos_neg_pre),
+        .sin_neg_in(sin_neg_pre),
+        .x_out(x_pipe),
+        .y_out(y_pipe),
+        .cos_neg_out(cos_neg_pipe),
+        .sin_neg_out(sin_neg_pipe)
     );
 
-    POST_PROCESSING_UNIT POPU (
-        .Cordic_x_in(cordic_x_out),
-        .Cordic_y_in(cordic_y_out),
-        .Cos_negate_in(cos_negate_out),
-        .Sin_negate_in(sin_negate_out),
-        .Cos(Cos_out),
-        .Sin(Sin_out)
+    POST_PROCESSING_UNIT POST (
+        .clk(clk),
+        .rst(rst),
+        .cordic_x(x_pipe),
+        .cordic_y(y_pipe),
+        .cos_neg(cos_neg_pipe),
+        .sin_neg(sin_neg_pipe),
+        .cos(cos),
+        .sin(sin)
     );
 
 endmodule

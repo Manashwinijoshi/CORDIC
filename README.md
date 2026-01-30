@@ -5,7 +5,7 @@ This repository implements a synthesizable, 16-bit, 16-stage pipelined CORDIC in
 
 Features:
 
-*High-throughput pipelined design
-*Fixed-point sine and cosine calculation
-*Full functional verification with UVM
-*MATLAB validation for correctness
+* High-throughput pipelined design
+* Fixed-point sine and cosine calculation
+* Full functional verification with UVM
+* MATLAB validation for correctness
